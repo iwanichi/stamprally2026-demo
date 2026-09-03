@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スタンプラリー</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f4f4f9; margin: 0; padding: 20px; }
+    h1 { color: #333; }
+    .card-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 350px; margin: 20px auto; }
+    .stamp-spot { background: #fff; border: 2px dashed #ccc; border-radius: 12px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 10px; }
+    .stamp-spot.active { border: 2px solid #ff6b6b; background: #fff5f5; }
+    .stamp-mark { font-size: 40px; color: #ff6b6b; display: none; }
+    .stamp-spot.active .stamp-mark { display: block; }
+    button { background: #007bff; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-top: 8px; cursor: pointer; }
+    .reset-btn { background: #6c757d; margin-top: 20px; font-size: 14px; padding: 10px 20px; }
+    #complete-msg { color: #28a745; font-weight: bold; display: none; font-size: 18px; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <h1>デジタルスタンプラリー</h1>
+  <p>各会場のボタンを押してスタンプを集めよう！</p>
+
+  <div id="complete-msg">🎉 コンプリートおめでとう！</div>
+
+  <div class="card-container" id="stampGrid"></div>
+
+  <button class="reset-btn" onclick="resetStamps()">リセットする</button>
+
+  <script>
+    // スポット一覧の設定（名称を変更）
+    const spots = [
+      { id: 'spot1', name: '商工祭' },
+      { id: 'spot2', name: '農業祭' },
+      { id: 'spot3', name: '福の市' },
+      { id: 'spot4', name: '住宅際' }
+    ];
+
+    // 保存データの取得
+    let collected = JSON.parse(localStorage.getItem('stampData')) || {};
+
+    function render() {
+      const grid = document.getElementById('stampGrid');
+      grid.innerHTML = '';
+      let count = 0;
+
+      spots.forEach(spot => {
+        const isStamped = !!collected[spot.id];
+        if (isStamped) count++;
+
+        const card = document.createElement('div');
+        card.className = `stamp-spot ${isStamped ? 'active' : ''}`;
+        card.innerHTML = `
+          <strong>${spot.name}</strong>
+          <span class="stamp-mark">済</span>
+          ${!isStamped ? `<button onclick="getStamp('${spot.id}')">スタンプ獲得</button>` : ''}
+        `;
+        grid.appendChild(card);
+      });
+
+      if (count === spots.length) {
+        document.getElementById('complete-msg').style.display = 'block';
+      } else {
+        document.getElementById('complete-msg').style.display = 'none';
+      }
+    }
+
+    // スタンプを押す処理
+    function getStamp(id) {
+      collected[id] = true;
+      localStorage.setItem('stampData', JSON.stringify(collected));
+      render();
+    }
+
+    // リセット処理
+    function resetStamps() {
+      if (confirm('スタンプを初期化しますか？')) {
+        collected = {};
+        localStorage.removeItem('stampData');
+        render();
+      }
+    }
+
+    // 初期描画
+    render();
+  </script>
+</body>
+</html>
