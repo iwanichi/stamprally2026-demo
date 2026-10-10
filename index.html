@@ -294,7 +294,7 @@
   <img src="jack.jpg" class="bg-jack bottom-right" alt="">
 
   <div class="content">
-    <div class="test-badge">📍 商工祭GPS判定設定済み</div>
+    <div class="test-badge">📍 全会場GPS判定設定済み</div>
     <h1>いちのせき産業まつり<br>イベント間スタンプラリー</h1>
     <p>各会場のボタンを押してスタンプを集めよう！</p>
     
@@ -342,7 +342,8 @@
   </footer>
 
   <script>
-    // 3つの会場の定義（商工祭に緯度経度・半径100mを設定）
+    // 各会場の定義（商工祭：なのはなプラザ / 100m）
+    // （農業祭・住宅祭：一関ヒロセユースドーム / 150m）
     const spots = [
       { 
         id: 'spot1', 
@@ -358,109 +359,22 @@
         name: '農業祭', 
         image: '農業祭.png', 
         color: '#27ae60',
-        lat: null,         // 未設定（後ほど追加）
-        lng: null,
-        radius: 100
+        lat: 38.940525,    // 一関ヒロセユースドーム 緯度
+        lng: 141.1554718,  // 一関ヒロセユースドーム 経度
+        radius: 150        // 半径 150m
       },
       { 
         id: 'spot3', 
         name: '住宅祭', 
         image: '住宅祭.png', 
         color: '#2b1704',
-        lat: null,         // 未設定（後ほど追加）
-        lng: null,
-        radius: 100
+        lat: 38.940525,    // 一関ヒロセユースドーム 緯度
+        lng: 141.1554718,  // 一関ヒロセユースドーム 経度
+        radius: 150        // 半径 150m
       }
     ];
 
     let collected = JSON.parse(localStorage.getItem('stampData')) || {};
     let newlyStampedId = null;
 
-    let userCode = localStorage.getItem('userCode');
-    if (!userCode) {
-      generateUserCode();
-    }
-
-    function generateUserCode() {
-      const now = new Date();
-      const dateStr = (now.getMonth() + 1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0');
-      const timeStr = now.getHours().toString().padStart(2, '0') + now.getMinutes().toString().padStart(2, '0') + now.getSeconds().toString().padStart(2, '0');
-      const randStr = Math.floor(100 + Math.random() * 900).toString();
-      
-      userCode = `STAMP-${dateStr}-${timeStr}-${randStr}`;
-      localStorage.setItem('userCode', userCode);
-    }
-
-    function render() {
-      const grid = document.getElementById('stampGrid');
-      grid.innerHTML = '';
-      let count = 0;
-
-      spots.forEach(spot => {
-        const isStamped = !!collected[spot.id];
-        if (isStamped) count++;
-
-        const isNewlyStamped = (spot.id === newlyStampedId);
-        const animClass = isNewlyStamped ? 'pop-anim' : '';
-        const shakeClass = isNewlyStamped ? 'shake-anim' : '';
-
-        const card = document.createElement('div');
-        card.className = `stamp-spot ${shakeClass}`;
-        card.style.borderColor = spot.color;
-
-        if (isStamped) {
-          if (spot.image) {
-            card.innerHTML = `
-              <div class="stamp-inner ${animClass}">
-                <img src="${spot.image}" class="stamp-img" alt="${spot.name}">
-                <div class="stamp-overlay-mark">済</div>
-              </div>
-            `;
-          } else {
-            card.innerHTML = `
-              <div class="stamp-inner ${animClass}">
-                <div class="spot-title text-landing-title" style="color: ${spot.color}; font-size: 26px;">${spot.name}</div>
-                <div class="stamp-overlay-mark">済</div>
-              </div>
-            `;
-          }
-        } else {
-          card.innerHTML = `
-            <div class="spot-title" style="color: ${spot.color};">${spot.name}</div>
-            <button onclick="handleStampClick('${spot.id}')">スタンプ獲得</button>
-          `;
-        }
-
-        grid.appendChild(card);
-      });
-
-      const completeBox = document.getElementById('complete-box');
-
-      if (count === spots.length) {
-        document.getElementById('userCode').innerText = userCode;
-
-        if (newlyStampedId !== null) {
-          completeBox.style.display = 'none';
-          completeBox.classList.remove('fade-in-anim');
-
-          setTimeout(() => {
-            completeBox.style.display = 'block';
-            completeBox.classList.add('fade-in-anim');
-            launchConfetti();
-          }, 850);
-        } else {
-          completeBox.style.display = 'block';
-        }
-      } else {
-        completeBox.style.display = 'none';
-        completeBox.classList.remove('fade-in-anim');
-      }
-
-      newlyStampedId = null;
-    }
-
-    // 2点間の距離をメートルで計算する関数
-    function getDistanceMeters(lat1, lon1, lat2, lon2) {
-      const R = 6371000; // 地球の半径 (m)
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon =
+    let userCode = localStorage
