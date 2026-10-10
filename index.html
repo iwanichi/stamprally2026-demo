@@ -294,9 +294,9 @@
   <img src="jack.jpg" class="bg-jack bottom-right" alt="">
 
   <div class="content">
-    <div class="test-badge">📍 GPS判定モード稼働中</div>
+    <div class="test-badge">📍 商工祭GPS判定設定済み</div>
     <h1>いちのせき産業まつり<br>イベント間スタンプラリー</h1>
-    <p>各会場の近くでボタンを押してスタンプを集めよう！</p>
+    <p>各会場のボタンを押してスタンプを集めよう！</p>
     
     <!-- 開催期間バー -->
     <div class="event-period">
@@ -342,7 +342,7 @@
   </footer>
 
   <script>
-    // 各会場の定義（商工祭に緯度経度・半径100mを設定）
+    // 3つの会場の定義（商工祭に緯度経度・半径100mを設定）
     const spots = [
       { 
         id: 'spot1', 
@@ -427,7 +427,7 @@
         } else {
           card.innerHTML = `
             <div class="spot-title" style="color: ${spot.color};">${spot.name}</div>
-            <button onclick="checkGPSAndGetStamp('${spot.id}')">スタンプ獲得</button>
+            <button onclick="handleStampClick('${spot.id}')">スタンプ獲得</button>
           `;
         }
 
@@ -459,108 +459,8 @@
       newlyStampedId = null;
     }
 
-    // 2点間の距離をメートルで計算する関数（ヒンベリの公式など）
+    // 2点間の距離をメートルで計算する関数
     function getDistanceMeters(lat1, lon1, lat2, lon2) {
       const R = 6371000; // 地球の半径 (m)
       const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
-    }
-
-    // GPS判定付きスタンプ獲得処理
-    function checkGPSAndGetStamp(id) {
-      const spot = spots.find(s => s.id === id);
-      
-      // 緯度経度が未設定（開発中など）の場合はテスト用として即取得を許可
-      if (!spot.lat || !spot.lng) {
-        alert("【開発用通知】この会場はGPS未設定のため、テストとしてスタンプを獲得します。");
-        getStamp(id);
-        return;
-      }
-
-      if (!navigator.geolocation) {
-        alert("お使いのブラウザは位置情報サービスに対応していません。");
-        return;
-      }
-
-      alert("現在地を確認中...少々お待ちください。");
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-          const distance = getDistanceMeters(userLat, userLng, spot.lat, spot.lng);
-
-          if (distance <= spot.radius) {
-            // 範囲内
-            getStamp(id);
-          } else {
-            // 範囲外（何メートル離れているかも表示して親切に）
-            alert(`会場から離れています（現在地は約 ${Math.round(distance)}m 離れています）。\n${spot.name}の会場（半径${spot.radius}m以内）でお試しください。`);
-          }
-        },
-        (error) => {
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              alert("位置情報の利用が許可されていません。ブラウザの設定から位置情報を許可してください。");
-              break;
-            case error.POSITION_UNAVAILABLE:
-              alert("位置情報が取得できませんでした。");
-              break;
-            case error.TIMEOUT:
-              alert("位置情報の取得がタイムアウトしました。");
-              break;
-            default:
-              alert("位置情報の取得に失敗しました。");
-              break;
-          }
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    }
-
-    function getStamp(id) {
-      newlyStampedId = id;
-      collected[id] = true;
-      localStorage.setItem('stampData', JSON.stringify(collected));
-      render();
-    }
-
-    function launchConfetti() {
-      if (typeof confetti === 'function') {
-        const count = 200;
-        const defaults = { origin: { y: 0.7 } };
-        function fire(particleRatio, opts) {
-          confetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
-        }
-        const hwColors = ['#ff8c00', '#f39c12', '#ffb703', '#ffffff', '#2b1704'];
-        fire(0.25, { spread: 26, startVelocity: 55, colors: hwColors });
-        fire(0.2, { spread: 60, colors: hwColors });
-        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: hwColors });
-        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: hwColors });
-        fire(0.1, { spread: 120, startVelocity: 45, colors: hwColors });
-      }
-    }
-
-    function openForm() {
-      alert("【開発用メッセージ】\n応募フォームのURLが設定されると、ここに移動します。\n\n確認コード: " + userCode + "\nこの画面のスクショを撮影してフォームに送ってもらいます。");
-    }
-
-    function resetStamps() {
-      if (confirm('スタンプと確認コードをリセットしますか？')) {
-        collected = {};
-        localStorage.removeItem('stampData');
-        localStorage.removeItem('userCode');
-        generateUserCode();
-        render();
-      }
-    }
-    render();
-  </script>
-</body>
-</html>
+      const dLon =
