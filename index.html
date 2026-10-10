@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>いちのせき産業まつり イベント間スタンプラリー</title>
 
+  <!-- 紙吹雪（Confetti）用ライブラリの読み込み -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -100,7 +101,7 @@
       padding: 8px; 
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); 
       box-sizing: border-box;
-      overflow: visible; /* 巨大化したスタンプが枠外にはみ出るダイナミック感を復元 */
+      overflow: visible;
     }
 
     .spot-title { font-size: 20px; font-weight: bold; margin-bottom: 4px; } 
@@ -139,7 +140,7 @@
       z-index: 100;
     }
 
-    /* === 元に戻した演出：着地時の台紙枠の強力な震え === */
+    /* 着地時の台紙枠の震え */
     .stamp-spot.shake-anim {
       animation: spotImpactShake 0.25s ease-out 0.35s;
     }
@@ -153,9 +154,7 @@
       100% { transform: scale(1) translate(0, 0); }
     }
     
-    /* === 元に戻した演出：2段階ダイナミック超インパクトアニメーション === */
-    
-    /* 1. ロゴ/タイトル名の着地 */
+    /* 2段階ダイナミック超インパクトアニメーション */
     .pop-anim .stamp-img,
     .pop-anim .text-landing-title {
       animation: logoLanding 0.35s ease-out forwards;
@@ -176,7 +175,6 @@
       }
     }
 
-    /* 2. 「済」スタンプの超巨大化インパクトドスン演出 */
     .pop-anim .stamp-overlay-mark {
       opacity: 0;
       animation: megaStampDrop 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) 0.3s forwards;
@@ -287,6 +285,7 @@
 </head>
 <body>
 
+  <!-- 背景画像 -->
   <img src="jack.jpg" class="bg-jack top-left" alt="">
   <img src="jack.jpg" class="bg-jack top-right" alt="">
   <img src="jack.jpg" class="bg-jack mid-left" alt="">
@@ -295,10 +294,11 @@
   <img src="jack.jpg" class="bg-jack bottom-right" alt="">
 
   <div class="content">
-    <div class="test-badge">🔧 テストモード動作中</div>
+    <div class="test-badge">📍 GPS判定モード稼働中</div>
     <h1>いちのせき産業まつり<br>イベント間スタンプラリー</h1>
-    <p>各会場のボタンを押してスタンプを集めよう！</p>
+    <p>各会場の近くでボタンを押してスタンプを集めよう！</p>
     
+    <!-- 開催期間バー -->
     <div class="event-period">
       📅 開催期間：令和8年10月18日(土) 〜 10月25日(日)
     </div>
@@ -313,160 +313,17 @@
       <div class="code-display">応募確認コード: <span id="userCode">----</span></div>
     </div>
 
+    <!-- スタンプ台紙 -->
     <div class="card-container" id="stampGrid"></div>
 
+    <!-- GPS案内バナー -->
     <div class="gps-notice-banner">
       📍 会場近くで位置情報をONにしてください
     </div>
 
+    <!-- リセットボタン（常時表示） -->
     <button class="reset-btn" onclick="resetStamps()">スタンプをリセット</button>
 
+    <!-- ご注意・免責事項 -->
     <div class="notice-box">
-      <span class="notice-title">【ご注意・免責事項】</span>
-      <ul>
-        <li>スタンプ取得時は<b>位置情報（GPS）のアクセス許可</b>が必要です。</li>
-        <li>イベント終了まで<b>同じブラウザ（SafariやChrome等）</b>でアクセスしてください。</li>
-        <li>プライベートモード（シークレットモード）のご利用や、ブラウザの履歴・Webデータを消去するとスタンプも消去されます。</li>
-        <li><b>誤操作やデータ消去等により失われたスタンプの再発行・復元はできません</b>のでご注意ください。</li>
-        <li>ご利用の端末、OSのバージョン、または通信環境によっては正常にスタンプが獲得できない場合があります。</li>
-      </ul>
-    </div>
-  </div>
-
-  <footer>
-    主催：いちのせき産業まつり実行委員会
-  </footer>
-
-  <script>
-    const spots = [
-      { id: 'spot1', name: '商工祭', image: '商工祭.png', color: '#e67e22' },
-      { id: 'spot2', name: '農業祭', image: '農業祭.png', color: '#27ae60' },
-      { id: 'spot3', name: '住宅祭', image: '住宅祭.png', color: '#2b1704' }
-    ];
-
-    let collected = JSON.parse(localStorage.getItem('stampData')) || {};
-    let newlyStampedId = null;
-
-    let userCode = localStorage.getItem('userCode');
-    if (!userCode) {
-      generateUserCode();
-    }
-
-    function generateUserCode() {
-      const now = new Date();
-      const dateStr = (now.getMonth() + 1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0');
-      const timeStr = now.getHours().toString().padStart(2, '0') + now.getMinutes().toString().padStart(2, '0') + now.getSeconds().toString().padStart(2, '0');
-      const randStr = Math.floor(100 + Math.random() * 900).toString();
-      
-      userCode = `STAMP-${dateStr}-${timeStr}-${randStr}`;
-      localStorage.setItem('userCode', userCode);
-    }
-
-    function render() {
-      const grid = document.getElementById('stampGrid');
-      grid.innerHTML = '';
-      let count = 0;
-
-      spots.forEach(spot => {
-        const isStamped = !!collected[spot.id];
-        if (isStamped) count++;
-
-        const isNewlyStamped = (spot.id === newlyStampedId);
-        const animClass = isNewlyStamped ? 'pop-anim' : '';
-        const shakeClass = isNewlyStamped ? 'shake-anim' : '';
-
-        const card = document.createElement('div');
-        card.className = `stamp-spot ${shakeClass}`;
-        card.style.borderColor = spot.color;
-
-        if (isStamped) {
-          if (spot.image) {
-            card.innerHTML = `
-              <div class="stamp-inner ${animClass}">
-                <img src="${spot.image}" class="stamp-img" alt="${spot.name}">
-                <div class="stamp-overlay-mark">済</div>
-              </div>
-            `;
-          } else {
-            card.innerHTML = `
-              <div class="stamp-inner ${animClass}">
-                <div class="spot-title text-landing-title" style="color: ${spot.color}; font-size: 26px;">${spot.name}</div>
-                <div class="stamp-overlay-mark">済</div>
-              </div>
-            `;
-          }
-        } else {
-          card.innerHTML = `
-            <div class="spot-title" style="color: ${spot.color};">${spot.name}</div>
-            <button onclick="getStampTest('${spot.id}')">スタンプ獲得</button>
-          `;
-        }
-
-        grid.appendChild(card);
-      });
-
-      const completeBox = document.getElementById('complete-box');
-
-      if (count === spots.length) {
-        document.getElementById('userCode').innerText = userCode;
-
-        if (newlyStampedId !== null) {
-          completeBox.style.display = 'none';
-          completeBox.classList.remove('fade-in-anim');
-
-          setTimeout(() => {
-            completeBox.style.display = 'block';
-            completeBox.classList.add('fade-in-anim');
-            launchConfetti();
-          }, 850);
-        } else {
-          completeBox.style.display = 'block';
-        }
-      } else {
-        completeBox.style.display = 'none';
-        completeBox.classList.remove('fade-in-anim');
-      }
-
-      newlyStampedId = null;
-    }
-
-    function launchConfetti() {
-      if (typeof confetti === 'function') {
-        const count = 200;
-        const defaults = { origin: { y: 0.7 } };
-        function fire(particleRatio, opts) {
-          confetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
-        }
-        const hwColors = ['#ff8c00', '#f39c12', '#ffb703', '#ffffff', '#2b1704'];
-        fire(0.25, { spread: 26, startVelocity: 55, colors: hwColors });
-        fire(0.2, { spread: 60, colors: hwColors });
-        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: hwColors });
-        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: hwColors });
-        fire(0.1, { spread: 120, startVelocity: 45, colors: hwColors });
-      }
-    }
-
-    function getStampTest(id) {
-      newlyStampedId = id;
-      collected[id] = true;
-      localStorage.setItem('stampData', JSON.stringify(collected));
-      render();
-    }
-
-    function openForm() {
-      alert("【開発用メッセージ】\n応募フォームのURLが設定されると、ここに移動します。\n\n確認コード: " + userCode + "\nこの画面のスクショを撮影してフォームに送ってもらいます。");
-    }
-
-    function resetStamps() {
-      if (confirm('スタンプと確認コードをリセットしますか？')) {
-        collected = {};
-        localStorage.removeItem('stampData');
-        localStorage.removeItem('userCode');
-        generateUserCode();
-        render();
-      }
-    }
-    render();
-  </script>
-</body>
-</html>
+      <span class="notice-title">【
