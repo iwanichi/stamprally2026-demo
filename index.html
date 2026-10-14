@@ -43,19 +43,6 @@
     .bg-jack.bottom-right { bottom: -10px; right: 15px; width: 90px; height: 90px; transform: rotate(15deg); opacity: 0.12; }
 
     .content { flex: 1; position: relative; z-index: 1; } 
-    
-    /* テストモード用バッジ */
-    .test-badge { 
-      display: inline-block;
-      background: #c0392b; 
-      color: #ffffff; 
-      font-size: 12px; 
-      font-weight: bold; 
-      padding: 4px 10px; 
-      border-radius: 4px; 
-      margin-bottom: 10px; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-    }
 
     h1 { color: #2b1704; margin-bottom: 5px; margin-top: 5px; font-size: 20px; line-height: 1.3; }
     p { color: #4a2c11; margin-top: 5px; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
@@ -200,24 +187,6 @@
       }
     }
 
-    /* GPS案内バナー */
-    .gps-notice-banner {
-      background: #fff3cd;
-      color: #856404;
-      border: 1px solid #ffeeba;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 12px;
-      font-weight: bold;
-      max-width: 340px;
-      margin: 15px auto 10px auto;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
     button { 
       background: #e67e22; 
       color: #ffffff; 
@@ -249,7 +218,7 @@
     
     .complete-title { color: #27ae60; font-weight: bold; font-size: 16px; margin-bottom: 8px; white-space: nowrap; letter-spacing: -0.5px; }
     .complete-desc { font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 12px; }
-    .apply-btn { background: #27ae60; color: white; font-size: 15px; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; width: 80%; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+    .apply-btn { background: #27ae60; color: white; font-size: 15px; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; width: 80%; box-shadow: 0 3px 6px rgba(0,0,0,0.2); text-decoration: none; display: inline-block; box-sizing: border-box; }
     .code-display { font-size: 11px; color: #666; margin-top: 8px; font-family: monospace; }
 
     /* リセットボタン */
@@ -295,7 +264,6 @@
   <img src="jack.jpg" class="bg-jack bottom-right" alt="">
 
   <div class="content">
-    <div class="test-badge">🔧 テストモード動作中</div>
     <h1>いちのせき産業まつり<br>イベント間スタンプラリー</h1>
     <p>各会場のボタンを押してスタンプを集めよう！</p>
     
@@ -309,22 +277,17 @@
         全スタンプ達成です！<br>
         この画面をスクリーンショット撮影の上、下記の応募フォームよりご応募ください。
       </div>
-      <button class="apply-btn" onclick="openForm()">🎁 景品に応募する</button>
+      <a href="https://forms.gle/KMpnjdgTbGCLQDuFA" target="_blank" class="apply-btn" onclick="alert('確認コード: ' + userCode + '\n※応募フォームにこの確認コードを入力してください。')">🎁 景品に応募する</a>
       <div class="code-display">応募確認コード: <span id="userCode">----</span></div>
     </div>
 
     <div class="card-container" id="stampGrid"></div>
-
-    <div class="gps-notice-banner">
-      📍 会場近くで位置情報をONにしてください
-    </div>
 
     <button class="reset-btn" onclick="resetStamps()">スタンプをリセット</button>
 
     <div class="notice-box">
       <span class="notice-title">【ご注意・免責事項】</span>
       <ul>
-        <li>スタンプ取得時は<b>位置情報（GPS）のアクセス許可</b>が必要です。</li>
         <li>イベント終了まで<b>同じブラウザ（SafariやChrome等）</b>でアクセスしてください。</li>
         <li>プライベートモード（シークレットモード）のご利用や、ブラウザの履歴・Webデータを消去するとスタンプも消去されます。</li>
         <li><b>誤操作やデータ消去等により失われたスタンプの再発行・復元はできません</b>のでご注意ください。</li>
@@ -453,10 +416,6 @@
       render();
     }
 
-    function openForm() {
-      alert("【開発用メッセージ】\n応募フォームのURLが設定されると、ここに移動します。\n\n確認コード: " + userCode + "\nこの画面のスクショを撮影してフォームに送ってもらいます。");
-    }
-
     function resetStamps() {
       if (confirm('スタンプと確認コードをリセットしますか？')) {
         collected = {};
@@ -466,6 +425,7 @@
         render();
       }
     }
+
     render();
   </script>
 </body>
