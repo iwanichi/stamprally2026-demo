@@ -217,9 +217,9 @@
     .complete-desc { font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 12px; }
     .apply-btn { background: #27ae60; color: white; font-size: 15px; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; width: 80%; box-shadow: 0 3px 6px rgba(0,0,0,0.2); text-decoration: none; display: inline-block; box-sizing: border-box; }
 
-    /* リセットボタン */
+    /* リセットボタン（DEBUG_MODEがtrueの時だけ表示されるよう制御） */
     .reset-btn { 
-      display: block;
+      display: none; /* デフォルトは非表示 */
       background: rgba(43, 23, 4, 0.7); 
       color: #ffffff; 
       border: 1px solid rgba(255, 255, 255, 0.3); 
@@ -278,7 +278,8 @@
 
     <div class="card-container" id="stampGrid"></div>
 
-    <button class="reset-btn" onclick="resetStamps()">スタンプをリセット</button>
+    <!-- リセットボタン（DEBUG_MODE連動） -->
+    <button id="resetBtn" class="reset-btn" onclick="resetStamps()">スタンプをリセット</button>
 
     <div class="notice-box">
       <span class="notice-title">【ご注意・免責事項】</span>
@@ -296,7 +297,8 @@
   </footer>
 
   <script>
-    // ★ 本番運用時は false に設定（現在はテスト確認のため true にしています）
+    // ★ true にするとテストモード（いつでも押せる ＋ リセットボタンが表示される）
+    // ★ false にすると本番モード（開催日のみ押せる ＋ リセットボタンが非表示になる）
     const DEBUG_MODE = true; 
 
     // 各スポットの押印可能日リスト（YYYY-MM-DD形式）
@@ -326,6 +328,16 @@
 
     let collected = JSON.parse(localStorage.getItem('stampData')) || {};
     let newlyStampedId = null;
+
+    // 起動時にDEBUG_MODEに応じてリセットボタンの表示・非表示を切り替える
+    window.addEventListener('DOMContentLoaded', () => {
+      const resetBtn = document.getElementById('resetBtn');
+      if (DEBUG_MODE) {
+        resetBtn.style.display = 'block'; // テストモードのときは表示
+      } else {
+        resetBtn.style.display = 'none';  // 本番モードのときは非表示
+      }
+    });
 
     // 本日の日付を「YYYY-MM-DD」形式で取得する関数
     function getTodayString() {
@@ -413,7 +425,7 @@
         localStorage.setItem('stampData', JSON.stringify(collected));
         render();
       } else {
-        alert(`【本日は押印できません】\n${spot.name}のスタンプは、指定された開催日（10月14〜16日、およびイベント当日）のみ押すことができます。`);
+        alert(`【本日は押印できません】\n${spot.name}のスタンプは、指定された開催日のみ押すことができます。`);
       }
     }
 
@@ -434,7 +446,7 @@
     }
 
     function resetStamps() {
-      if (confirm('スタンプとリセットしますか？')) {
+      if (confirm('スタンプをリセットしますか？')) {
         collected = {};
         localStorage.removeItem('stampData');
         render();
