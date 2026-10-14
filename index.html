@@ -283,10 +283,10 @@
     <div class="notice-box">
       <span class="notice-title">【ご注意・免責事項】</span>
       <ul>
-        <li><b>商工祭</b>は10月17日・18日のみ、<b>農業祭・住宅祭</b>は10月24日・25日のみスタンプが押せます。</li>
         <li>イベント終了まで<b>同じブラウザ（SafariやChrome等）</b>でアクセスしてください。</li>
         <li>プライベートモード（シークレットモード）のご利用や、ブラウザの履歴・Webデータを消去するとスタンプも消去されます。</li>
-        <li><b>誤操作や動作環境等により失われたスタンプの再発行・復元はできません</b>のでご注意ください。</li>
+        <li><b>誤操作やデータ消去等により失われたスタンプの再発行・復元はできません</b>のでご注意ください。</li>
+        <li>ご利用の端末、OSのバージョン、または通信環境によっては正常にスタンプが獲得できない場合があります。</li>
       </ul>
     </div>
   </div>
@@ -296,31 +296,31 @@
   </footer>
 
   <script>
-    // ★ 【テスト用設定】今すぐ動作確認したい場合は true にしてください。本番公開時は必ず false にしてください。
-    const DEBUG_MODE = true; 
+    // ★ 本番運用時は false に設定（現在はテスト確認のため true にしています）
+    const DEBUG_MODE = false; 
 
-    // 各スポットの開催日（許可する日付のリスト 「YYYY-MM-DD」形式）
+    // 各スポットの押印可能日リスト（YYYY-MM-DD形式）
     const spots = [
       { 
         id: 'spot1', 
         name: '商工祭', 
         image: '商工祭.png', 
         color: '#e67e22',
-        allowedDates: ['2026-10-17', '2026-10-18'] // 10月17日、18日のみ
+        allowedDates: ['2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18'] 
       },
       { 
         id: 'spot2', 
         name: '農業祭', 
         image: '農業祭.png', 
         color: '#27ae60',
-        allowedDates: ['2026-10-24', '2026-10-25'] // 10月24日、25日のみ
+        allowedDates: ['2026-10-14', '2026-10-15', '2026-10-16', '2026-10-24', '2026-10-25'] 
       },
       { 
         id: 'spot3', 
         name: '住宅祭', 
         image: '住宅祭.png', 
         color: '#2b1704',
-        allowedDates: ['2026-10-24', '2026-10-25'] // 10月24日、25日のみ
+        allowedDates: ['2026-10-14', '2026-10-15', '2026-10-16', '2026-10-24', '2026-10-25'] 
       }
     ];
 
@@ -407,14 +407,13 @@
       const spot = spots.find(s => s.id === id);
       const todayStr = getTodayString();
 
-      // DEBUG_MODEがtrue、または許可された日付に含まれている場合に獲得可能
       if (DEBUG_MODE || spot.allowedDates.includes(todayStr)) {
         newlyStampedId = id;
         collected[id] = true;
         localStorage.setItem('stampData', JSON.stringify(collected));
         render();
       } else {
-        alert(`【開催期間外です】\n${spot.name}のスタンプは、開催期間中（${spot.allowedDates.join('・')}）のみ押すことができます。`);
+        alert(`【本日は押印できません】\n${spot.name}のスタンプは、指定された開催日（10月14〜16日、およびイベント当日）のみ押すことができます。`);
       }
     }
 
@@ -435,7 +434,7 @@
     }
 
     function resetStamps() {
-      if (confirm('スタンプをリセットしますか？')) {
+      if (confirm('スタンプとリセットしますか？')) {
         collected = {};
         localStorage.removeItem('stampData');
         render();
