@@ -215,4 +215,194 @@
     
     .complete-title { color: #27ae60; font-weight: bold; font-size: 16px; margin-bottom: 8px; white-space: nowrap; letter-spacing: -0.5px; }
     .complete-desc { font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 12px; }
-    .apply-btn { background: #27ae60; color: white; font-size: 15px; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; width: 80%; box-shadow
+    .apply-btn { background: #27ae60; color: white; font-size: 15px; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; width: 80%; box-shadow: 0 3px 6px rgba(0,0,0,0.2); text-decoration: none; display: inline-block; box-sizing: border-box; }
+
+    /* リセットボタン */
+    .reset-btn { 
+      display: block;
+      background: rgba(43, 23, 4, 0.7); 
+      color: #ffffff; 
+      border: 1px solid rgba(255, 255, 255, 0.3); 
+      border-radius: 6px; 
+      margin: 15px auto 0 auto; 
+      font-size: 12px; 
+      padding: 8px 16px; 
+      cursor: pointer; 
+    } 
+    
+    .notice-box { 
+      margin: 30px auto 10px auto; 
+      max-width: 350px; 
+      background: rgba(255, 252, 245, 0.95); 
+      border: 1px solid #d8c2b0; 
+      border-radius: 8px; 
+      padding: 12px 15px; 
+      text-align: left; 
+      font-size: 11px; 
+      color: #4a2c11; 
+      line-height: 1.5; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .notice-title { font-weight: bold; color: #2b1704; margin-bottom: 5px; display: block; }
+    .notice-box ul { margin: 0; padding-left: 18px; }
+    .notice-box li { margin-bottom: 3px; }
+
+    footer { margin-top: 20px; font-size: 13px; color: #2b1704; font-weight: bold; position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+
+  <img src="jack.jpg" class="bg-jack top-left" alt="">
+  <img src="jack.jpg" class="bg-jack top-right" alt="">
+  <img src="jack.jpg" class="bg-jack mid-left" alt="">
+  <img src="jack.jpg" class="bg-jack mid-right" alt="">
+  <img src="jack.jpg" class="bg-jack bottom-left" alt="">
+  <img src="jack.jpg" class="bg-jack bottom-right" alt="">
+
+  <div class="content">
+    <h1>いちのせき産業まつり<br>イベント間スタンプラリー</h1>
+    <p>各会場のボタンを押してスタンプを集めよう！</p>
+    
+    <div class="event-period">
+      📅 開催期間：令和8年10月18日(土) 〜 10月25日(日)
+    </div>
+
+    <div id="complete-box">
+      <div class="complete-title">🎉 ご来場ありがとうございます！！</div>
+      <div class="complete-desc">
+        全スタンプ達成です！<br>
+        この画面をスクリーンショット撮影の上、下記の応募フォームよりご応募ください。
+      </div>
+      <a href="https://forms.gle/4zARd1k9g18x56ZCA" target="_blank" class="apply-btn">🎁 景品に応募する</a>
+    </div>
+
+    <div class="card-container" id="stampGrid"></div>
+
+    <button class="reset-btn" onclick="resetStamps()">スタンプをリセット</button>
+
+    <div class="notice-box">
+      <span class="notice-title">【ご注意・免責事項】</span>
+      <ul>
+        <li>イベント終了まで<b>同じブラウザ（SafariやChrome等）</b>でアクセスしてください。</li>
+        <li>プライベートモード（シークレットモード）のご利用や、ブラウザの履歴・Webデータを消去するとスタンプも消去されます。</li>
+        <li><b>誤操作やデータ消去等により失われたスタンプの再発行・復元はできません</b>のでご注意ください。</li>
+        <li>ご利用の端末、OSのバージョン、または通信環境によっては正常にスタンプが獲得できない場合があります。</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    主催：いちのせき産業まつり実行委員会
+  </footer>
+
+  <script>
+    const spots = [
+      { id: 'spot1', name: '商工祭', image: '商工祭.png', color: '#e67e22' },
+      { id: 'spot2', name: '農業祭', image: '農業祭.png', color: '#27ae60' },
+      { id: 'spot3', name: '住宅祭', image: '住宅祭.png', color: '#2b1704' }
+    ];
+
+    let collected = JSON.parse(localStorage.getItem('stampData')) || {};
+    let newlyStampedId = null;
+
+    function render() {
+      const grid = document.getElementById('stampGrid');
+      grid.innerHTML = '';
+      let count = 0;
+
+      spots.forEach(spot => {
+        const isStamped = !!collected[spot.id];
+        if (isStamped) count++;
+
+        const isNewlyStamped = (spot.id === newlyStampedId);
+        const animClass = isNewlyStamped ? 'pop-anim' : '';
+        const shakeClass = isNewlyStamped ? 'shake-anim' : '';
+
+        const card = document.createElement('div');
+        card.className = `stamp-spot ${shakeClass}`;
+        card.style.borderColor = spot.color;
+
+        if (isStamped) {
+          if (spot.image) {
+            card.innerHTML = `
+              <div class="stamp-inner ${animClass}">
+                <img src="${spot.image}" class="stamp-img" alt="${spot.name}">
+                <div class="stamp-overlay-mark">済</div>
+              </div>
+            `;
+          } else {
+            card.innerHTML = `
+              <div class="stamp-inner ${animClass}">
+                <div class="spot-title text-landing-title" style="color: ${spot.color}; font-size: 26px;">${spot.name}</div>
+                <div class="stamp-overlay-mark">済</div>
+              </div>
+            `;
+          }
+        } else {
+          card.innerHTML = `
+            <div class="spot-title" style="color: ${spot.color};">${spot.name}</div>
+            <button onclick="getStampTest('${spot.id}')">スタンプ獲得</button>
+          `;
+        }
+
+        grid.appendChild(card);
+      });
+
+      const completeBox = document.getElementById('complete-box');
+
+      if (count === spots.length) {
+        if (newlyStampedId !== null) {
+          completeBox.style.display = 'none';
+          completeBox.classList.remove('fade-in-anim');
+
+          setTimeout(() => {
+            completeBox.style.display = 'block';
+            completeBox.classList.add('fade-in-anim');
+            launchConfetti();
+          }, 850);
+        } else {
+          completeBox.style.display = 'block';
+        }
+      } else {
+        completeBox.style.display = 'none';
+        completeBox.classList.remove('fade-in-anim');
+      }
+
+      newlyStampedId = null;
+    }
+
+    function launchConfetti() {
+      if (typeof confetti === 'function') {
+        const count = 200;
+        const defaults = { origin: { y: 0.7 } };
+        function fire(particleRatio, opts) {
+          confetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
+        }
+        const hwColors = ['#ff8c00', '#f39c12', '#ffb703', '#ffffff', '#2b1704'];
+        fire(0.25, { spread: 26, startVelocity: 55, colors: hwColors });
+        fire(0.2, { spread: 60, colors: hwColors });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: hwColors });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: hwColors });
+        fire(0.1, { spread: 120, startVelocity: 45, colors: hwColors });
+      }
+    }
+
+    function getStampTest(id) {
+      newlyStampedId = id;
+      collected[id] = true;
+      localStorage.setItem('stampData', JSON.stringify(collected));
+      render();
+    }
+
+    function resetStamps() {
+      if (confirm('スタンプをリセットしますか？')) {
+        collected = {};
+        localStorage.removeItem('stampData');
+        render();
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
