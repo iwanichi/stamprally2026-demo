@@ -217,7 +217,7 @@
     .complete-desc { font-size: 12px; color: #333; line-height: 1.4; margin-bottom: 12px; }
     .apply-btn { background: #27ae60; color: white; font-size: 15px; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; width: 80%; box-shadow: 0 3px 6px rgba(0,0,0,0.2); text-decoration: none; display: inline-block; box-sizing: border-box; }
 
-    /* リセットボタンのベーススタイル */
+    /* リセットボタンのスタイル */
     .reset-btn { 
       background: rgba(43, 23, 4, 0.7); 
       color: #ffffff; 
@@ -277,7 +277,7 @@
 
     <div class="card-container" id="stampGrid"></div>
 
-    <!-- リセットボタン（本番時はJSで自動非表示になります） -->
+    <!-- リセットボタン：DEBUG_MODEがfalseのときはHTMLから完全に非表示（style="display:none;"）にします -->
     <button id="resetBtn" class="reset-btn" onclick="resetStamps()">スタンプをリセット</button>
 
     <div class="notice-box">
@@ -297,13 +297,13 @@
 
   <script>
     // ★ true にするとテストモード（いつでも押せる ＋ リセットボタンが表示される）
-    // ★ false にすると本番モード（開催日のみ押せる ＋ リセットボタンが非表示になる）
+    // ★ false にすると本番モード（開催日のみ押せる ＋ リセットボタンが消える）
     const DEBUG_MODE = false; 
 
-    // 読み込みと同時にDEBUG_MODEに応じてリセットボタンを確実に消す・表示する
+    // 【超重要】本番モードのときはリセットボタンのHTML要素自体をここで完全に消去します
     if (!DEBUG_MODE) {
-      const resetBtn = document.getElementById('resetBtn');
-      if (resetBtn) resetBtn.style.display = 'none';
+      const btn = document.getElementById('resetBtn');
+      if (btn) btn.remove();
     }
 
     // 各スポットの押印可能日リスト（YYYY-MM-DD形式）
@@ -441,7 +441,7 @@
     }
 
     function resetStamps() {
-      if (confirm('スタンプをリセットしますか？')) {
+      if (confirm('スタンプとリセットしますか？')) {
         collected = {};
         localStorage.removeItem('stampData');
         render();
