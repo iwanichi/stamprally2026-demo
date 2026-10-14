@@ -28,7 +28,7 @@
     .bg-jack {
       position: fixed;
       pointer-events: none;
-      z-index: 0;
+      z-index: 1;
       opacity: 0.15;
       border-radius: 50%;
       object-fit: cover;
@@ -42,7 +42,7 @@
     .bg-jack.bottom-left { bottom: 20px; left: 10px; width: 70px; height: 70px; transform: rotate(-10deg); opacity: 0.12; }
     .bg-jack.bottom-right { bottom: -10px; right: 15px; width: 90px; height: 90px; transform: rotate(15deg); opacity: 0.12; }
 
-    .content { flex: 1; position: relative; z-index: 1; } 
+    .content { flex: 1; position: relative; z-index: 2; } 
 
     h1 { color: #2b1704; margin-bottom: 5px; margin-top: 5px; font-size: 20px; line-height: 1.3; }
     p { color: #4a2c11; margin-top: 5px; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
@@ -261,7 +261,7 @@
 
   <div class="content">
     <h1>いちのせき産業まつり<br>イベント間スタンプラリー</h1>
-    <p>各会場のボタンを押してスタンプを集めよう！</p>
+    <p>各会場の開催日にボタンを押してスタンプを集めよう！</p>
     
     <div class="event-period">
       📅 開催期間：令和8年10月18日(土) 〜 10月25日(日)
@@ -283,10 +283,10 @@
     <div class="notice-box">
       <span class="notice-title">【ご注意・免責事項】</span>
       <ul>
+        <li><b>商工祭</b>は10月17日・18日のみ、<b>農業祭・住宅祭</b>は10月24日・25日のみスタンプが押せます。</li>
         <li>イベント終了まで<b>同じブラウザ（SafariやChrome等）</b>でアクセスしてください。</li>
         <li>プライベートモード（シークレットモード）のご利用や、ブラウザの履歴・Webデータを消去するとスタンプも消去されます。</li>
-        <li><b>誤操作やデータ消去等により失われたスタンプの再発行・復元はできません</b>のでご注意ください。</li>
-        <li>ご利用の端末、OSのバージョン、または通信環境によっては正常にスタンプが獲得できない場合があります。</li>
+        <li><b>誤操作や動作環境等により失われたスタンプの再発行・復元はできません</b>のでご注意ください。</li>
       </ul>
     </div>
   </div>
@@ -296,14 +296,45 @@
   </footer>
 
   <script>
+    // ★ 【テスト用設定】今すぐ動作確認したい場合は true にしてください。本番公開時は必ず false にしてください。
+    const DEBUG_MODE = true; 
+
+    // 各スポットの開催日（許可する日付のリスト 「YYYY-MM-DD」形式）
     const spots = [
-      { id: 'spot1', name: '商工祭', image: '商工祭.png', color: '#e67e22' },
-      { id: 'spot2', name: '農業祭', image: '農業祭.png', color: '#27ae60' },
-      { id: 'spot3', name: '住宅祭', image: '住宅祭.png', color: '#2b1704' }
+      { 
+        id: 'spot1', 
+        name: '商工祭', 
+        image: '商工祭.png', 
+        color: '#e67e22',
+        allowedDates: ['2026-10-17', '2026-10-18'] // 10月17日、18日のみ
+      },
+      { 
+        id: 'spot2', 
+        name: '農業祭', 
+        image: '農業祭.png', 
+        color: '#27ae60',
+        allowedDates: ['2026-10-24', '2026-10-25'] // 10月24日、25日のみ
+      },
+      { 
+        id: 'spot3', 
+        name: '住宅祭', 
+        image: '住宅祭.png', 
+        color: '#2b1704',
+        allowedDates: ['2026-10-24', '2026-10-25'] // 10月24日、25日のみ
+      }
     ];
 
     let collected = JSON.parse(localStorage.getItem('stampData')) || {};
     let newlyStampedId = null;
+
+    // 本日の日付を「YYYY-MM-DD」形式で取得する関数
+    function getTodayString() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
 
     function render() {
       const grid = document.getElementById('stampGrid');
@@ -341,7 +372,7 @@
         } else {
           card.innerHTML = `
             <div class="spot-title" style="color: ${spot.color};">${spot.name}</div>
-            <button onclick="getStampTest('${spot.id}')">スタンプ獲得</button>
+            <button onclick="tryGetStamp('${spot.id}')">スタンプ獲得</button>
           `;
         }
 
@@ -371,6 +402,22 @@
       newlyStampedId = null;
     }
 
+    // 日付判定つきスタンプ獲得処理
+    function tryGetStamp(id) {
+      const spot = spots.find(s => s.id === id);
+      const todayStr = getTodayString();
+
+      // DEBUG_MODEがtrue、または許可された日付に含まれている場合に獲得可能
+      if (DEBUG_MODE || spot.allowedDates.includes(todayStr)) {
+        newlyStampedId = id;
+        collected[id] = true;
+        localStorage.setItem('stampData', JSON.stringify(collected));
+        render();
+      } else {
+        alert(`【開催期間外です】\n${spot.name}のスタンプは、開催期間中（${spot.allowedDates.join('・')}）のみ押すことができます。`);
+      }
+    }
+
     function launchConfetti() {
       if (typeof confetti === 'function') {
         const count = 200;
@@ -385,13 +432,6 @@
         fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: hwColors });
         fire(0.1, { spread: 120, startVelocity: 45, colors: hwColors });
       }
-    }
-
-    function getStampTest(id) {
-      newlyStampedId = id;
-      collected[id] = true;
-      localStorage.setItem('stampData', JSON.stringify(collected));
-      render();
     }
 
     function resetStamps() {
