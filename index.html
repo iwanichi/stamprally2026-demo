@@ -281,3 +281,32 @@
 
   <div class="content">
     <h1>いちのせき産業まつり<br>イベント間スタンプラリー</h1>
+    <p>各会場のボタンを押してスタンプを集めよう！</p>
+    
+    <div class="event-period">
+      📅 開催期間：令和8年10月18日(土) 〜 10月25日(日)
+    </div>
+
+    <div id="complete-box">
+      <div class="complete-title">🎉 ご来場ありがとうございます！！</div>
+      <div class="complete-desc">
+        全スタンプ達成です！<br>
+        この画面をスクリーンショット撮影の上、下記の応募フォームよりご応募ください。
+      </div>
+      <a href="https://forms.gle/KMpnjdgTbGCLQDuFA" target="_blank" class="apply-btn" onclick="alert('確認コード: ' + userCode + '\n※応募フォームにこの確認コードを入力してください。')">🎁 景品に応募する</a>
+      <div class="code-display">応募確認コード: <span id="userCode">----</span></div>
+    </div>
+
+    <div class="card-container" id="stampGrid"></div>
+
+    <div class="gps-notice-banner">
+      📍 【テスト中】ボタンを押すとすぐにスタンプがたまります
+    </div>
+
+    <button class="reset-btn" onclick="resetStamps()">スタンプをリセット</button>
+
+    <div class="notice-box">
+      <span class="notice-title">【ご注意・免責事項】</span>
+      <ul>
+        <li>イベント終了まで<b>同じブラウザ（SafariやChrome等）</b>でアクセスしてください。</li>
+        <li>プライベートモード（シークレットモード）のご利用や、ブラウザの履歴・Webデータを消去するとスタンプも消去されます。
