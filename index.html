@@ -101,7 +101,7 @@
       padding: 8px; 
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); 
       box-sizing: border-box;
-      overflow: visible;
+      overflow: visible; /* 巨大化したスタンプが枠外にはみ出るダイナミック感を復元 */
     }
 
     .spot-title { font-size: 20px; font-weight: bold; margin-bottom: 4px; } 
@@ -140,7 +140,7 @@
       z-index: 100;
     }
 
-    /* 着地時の台紙枠の震え */
+    /* === 元に戻した演出：着地時の台紙枠の強力な震え === */
     .stamp-spot.shake-anim {
       animation: spotImpactShake 0.25s ease-out 0.35s;
     }
@@ -154,7 +154,9 @@
       100% { transform: scale(1) translate(0, 0); }
     }
     
-    /* 2段階ダイナミック超インパクトアニメーション */
+    /* === 元に戻した演出：2段階ダイナミック超インパクトアニメーション === */
+    
+    /* 1. ロゴ/タイトル名の着地 */
     .pop-anim .stamp-img,
     .pop-anim .text-landing-title {
       animation: logoLanding 0.35s ease-out forwards;
@@ -175,6 +177,7 @@
       }
     }
 
+    /* 2. 「済」スタンプの超巨大化インパクトドスン演出 */
     .pop-anim .stamp-overlay-mark {
       opacity: 0;
       animation: megaStampDrop 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) 0.3s forwards;
@@ -265,285 +268,4 @@
     
     .notice-box { 
       margin: 30px auto 10px auto; 
-      max-width: 350px; 
-      background: rgba(255, 252, 245, 0.95); 
-      border: 1px solid #d8c2b0; 
-      border-radius: 8px; 
-      padding: 12px 15px; 
-      text-align: left; 
-      font-size: 11px; 
-      color: #4a2c11; 
-      line-height: 1.5; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .notice-title { font-weight: bold; color: #2b1704; margin-bottom: 5px; display: block; }
-    .notice-box ul { margin: 0; padding-left: 18px; }
-    .notice-box li { margin-bottom: 3px; }
-
-    footer { margin-top: 20px; font-size: 13px; color: #2b1704; font-weight: bold; position: relative; z-index: 1; }
-  </style>
-</head>
-<body>
-
-  <!-- 背景画像 -->
-  <img src="jack.jpg" class="bg-jack top-left" alt="">
-  <img src="jack.jpg" class="bg-jack top-right" alt="">
-  <img src="jack.jpg" class="bg-jack mid-left" alt="">
-  <img src="jack.jpg" class="bg-jack mid-right" alt="">
-  <img src="jack.jpg" class="bg-jack bottom-left" alt="">
-  <img src="jack.jpg" class="bg-jack bottom-right" alt="">
-
-  <div class="content">
-    <div class="test-badge">📍 全会場GPS判定設定済み</div>
-    <h1>いちのせき産業まつり<br>イベント間スタンプラリー</h1>
-    <p>各会場のボタンを押してスタンプを集めよう！</p>
-    
-    <!-- 開催期間バー -->
-    <div class="event-period">
-      📅 開催期間：令和8年10月18日(土) 〜 10月25日(日)
-    </div>
-
-    <div id="complete-box">
-      <div class="complete-title">🎉 ご来場ありがとうございます！！</div>
-      <div class="complete-desc">
-        全スタンプ達成です！<br>
-        この画面をスクリーンショット撮影の上、下記の応募フォームよりご応募ください。
-      </div>
-      <button class="apply-btn" onclick="openForm()">🎁 景品に応募する</button>
-      <div class="code-display">応募確認コード: <span id="userCode">----</span></div>
-    </div>
-
-    <!-- スタンプ台紙 -->
-    <div class="card-container" id="stampGrid"></div>
-
-    <!-- GPS案内バナー -->
-    <div class="gps-notice-banner">
-      📍 会場近くで位置情報をONにしてください
-    </div>
-
-    <!-- リセットボタン（常時表示） -->
-    <button class="reset-btn" onclick="resetStamps()">スタンプをリセット</button>
-
-    <!-- ご注意・免責事項 -->
-    <div class="notice-box">
-      <span class="notice-title">【ご注意・免責事項】</span>
-      <ul>
-        <li>スタンプ取得時は<b>位置情報（GPS）のアクセス許可</b>が必要です。</li>
-        <li>イベント終了まで<b>同じブラウザ（SafariやChrome等）</b>でアクセスしてください。</li>
-        <li>プライベートモード（シークレットモード）のご利用や、ブラウザの履歴・Webデータを消去するとスタンプも消去されます。</li>
-        <li><b>誤操作やデータ消去等により失われたスタンプの再発行・復元はできません</b>のでご注意ください。</li>
-        <li>ご利用の端末、OSのバージョン、または通信環境によっては正常にスタンプが獲得できない場合があります。</li>
-      </ul>
-    </div>
-  </div>
-
-  <footer>
-    主催：いちのせき産業まつり実行委員会
-  </footer>
-
-  <script>
-    // 3つの会場の定義（商工祭：半径100m / 農業祭・住宅祭：半径150m）
-    const spots = [
-      { 
-        id: 'spot1', 
-        name: '商工祭', 
-        image: '商工祭.png', 
-        color: '#e67e22',
-        lat: 38.929050,    // なのはなプラザ 緯度
-        lng: 141.137169,   // なのはなプラザ 経度
-        radius: 100        // 半径 100m
-      },
-      { 
-        id: 'spot2', 
-        name: '農業祭', 
-        image: '農業祭.png', 
-        color: '#27ae60',
-        lat: 38.940525,    // 一関ヒロセユースドーム 緯度
-        lng: 141.1554718,  // 一関ヒロセユースドーム 経度
-        radius: 150        // 半径 150m
-      },
-      { 
-        id: 'spot3', 
-        name: '住宅祭', 
-        image: '住宅祭.png', 
-        color: '#2b1704',
-        lat: 38.940525,    // 一関ヒロセユースドーム 緯度
-        lng: 141.1554718,  // 一関ヒロセユースドーム 経度
-        radius: 150        // 半径 150m
-      }
-    ];
-
-    let collected = JSON.parse(localStorage.getItem('stampData')) || {};
-    let newlyStampedId = null;
-
-    let userCode = localStorage.getItem('userCode');
-    if (!userCode) {
-      generateUserCode();
-    }
-
-    function generateUserCode() {
-      const now = new Date();
-      const dateStr = (now.getMonth() + 1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0');
-      const timeStr = now.getHours().toString().padStart(2, '0') + now.getMinutes().toString().padStart(2, '0') + now.getSeconds().toString().padStart(2, '0');
-      const randStr = Math.floor(100 + Math.random() * 900).toString();
-      
-      userCode = `STAMP-${dateStr}-${timeStr}-${randStr}`;
-      localStorage.setItem('userCode', userCode);
-    }
-
-    function render() {
-      const grid = document.getElementById('stampGrid');
-      grid.innerHTML = '';
-      let count = 0;
-
-      spots.forEach(spot => {
-        const isStamped = !!collected[spot.id];
-        if (isStamped) count++;
-
-        const isNewlyStamped = (spot.id === newlyStampedId);
-        const animClass = isNewlyStamped ? 'pop-anim' : '';
-        const shakeClass = isNewlyStamped ? 'shake-anim' : '';
-
-        const card = document.createElement('div');
-        card.className = `stamp-spot ${shakeClass}`;
-        card.style.borderColor = spot.color;
-
-        if (isStamped) {
-          if (spot.image) {
-            card.innerHTML = `
-              <div class="stamp-inner ${animClass}">
-                <img src="${spot.image}" class="stamp-img" alt="${spot.name}">
-                <div class="stamp-overlay-mark">済</div>
-              </div>
-            `;
-          } else {
-            card.innerHTML = `
-              <div class="stamp-inner ${animClass}">
-                <div class="spot-title text-landing-title" style="color: ${spot.color}; font-size: 26px;">${spot.name}</div>
-                <div class="stamp-overlay-mark">済</div>
-              </div>
-            `;
-          }
-        } else {
-          card.innerHTML = `
-            <div class="spot-title" style="color: ${spot.color};">${spot.name}</div>
-            <button onclick="handleStampClick('${spot.id}')">スタンプ獲得</button>
-          `;
-        }
-
-        grid.appendChild(card);
-      });
-
-      const completeBox = document.getElementById('complete-box');
-
-      if (count === spots.length) {
-        document.getElementById('userCode').innerText = userCode;
-
-        if (newlyStampedId !== null) {
-          completeBox.style.display = 'none';
-          completeBox.classList.remove('fade-in-anim');
-
-          setTimeout(() => {
-            completeBox.style.display = 'block';
-            completeBox.classList.add('fade-in-anim');
-            launchConfetti();
-          }, 850);
-        } else {
-          completeBox.style.display = 'block';
-        }
-      } else {
-        completeBox.style.display = 'none';
-        completeBox.classList.remove('fade-in-anim');
-      }
-
-      newlyStampedId = null;
-    }
-
-    // 2点間の距離をメートルで計算する関数
-    function getDistanceMeters(lat1, lon1, lat2, lon2) {
-      const R = 6371000; // 地球の半径 (m)
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
-    }
-
-    // スタンプボタンが押されたときの処理
-    function handleStampClick(id) {
-      const spot = spots.find(s => s.id === id);
-      
-      if (!navigator.geolocation) {
-        alert("お使いのブラウザは位置情報サービスに対応していません。");
-        getStamp(id);
-        return;
-      }
-
-      alert("現在地を確認中...少々お待ちください。");
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-          const distance = getDistanceMeters(userLat, userLng, spot.lat, spot.lng);
-
-          if (distance <= spot.radius) {
-            getStamp(id);
-          } else {
-            alert(`会場から離れています（現在地は約 ${Math.round(distance)}m 離れています）。\n${spot.name}の会場（半径${spot.radius}m以内）でお試しください。`);
-          }
-        },
-        (error) => {
-          console.warn("GPS取得エラー:", error);
-          alert("位置情報が取得できなかったため、テストモードとしてスタンプを獲得します。");
-          getStamp(id);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    }
-
-    function getStamp(id) {
-      newlyStampedId = id;
-      collected[id] = true;
-      localStorage.setItem('stampData', JSON.stringify(collected));
-      render();
-    }
-
-    function launchConfetti() {
-      if (typeof confetti === 'function') {
-        const count = 200;
-        const defaults = { origin: { y: 0.7 } };
-        function fire(particleRatio, opts) {
-          confetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
-        }
-        const hwColors = ['#ff8c00', '#f39c12', '#ffb703', '#ffffff', '#2b1704'];
-        fire(0.25, { spread: 26, startVelocity: 55, colors: hwColors });
-        fire(0.2, { spread: 60, colors: hwColors });
-        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: hwColors });
-        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: hwColors });
-        fire(0.1, { spread: 120, startVelocity: 45, colors: hwColors });
-      }
-    }
-
-    function openForm() {
-      alert("【開発用メッセージ】\n応募フォームのURLが設定されると、ここに移動します。\n\n確認コード: " + userCode + "\nこの画面のスクショを撮影してフォームに送ってもらいます。");
-    }
-
-    function resetStamps() {
-      if (confirm('スタンプと確認コードをリセットしますか？')) {
-        collected = {};
-        localStorage.removeItem('stampData');
-        localStorage.removeItem('userCode');
-        generateUserCode();
-        render();
-      }
-    }
-
-    // 初期描画の実行
-    render();
-  </script>
-</body>
-</html>
+      max-width: 350px;
